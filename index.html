@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiverse Survivors</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Roboto:wght@400;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui">
+        <div id="score">Pontos: 0</div>
+        <!-- Health Bar -->
+        <div id="health-container">
+            <div id="health-bar"></div>
+        </div>
+        <div id="pause-hint">ESC para Pausar</div>
+    </div>
+
+    <!-- Ammo UI (Só para Wanda) -->
+    <div id="ammo-ui" class="hidden">
+        <p class="ammo-label">ENERGIA DO CAOS</p>
+        <h2 id="ammo-count" class="ammo-count">30</h2>
+    </div>
+
+    <!-- Heat UI (Só para Scott) -->
+    <div id="heat-ui" class="hidden">
+        <div id="heat-container">
+            <div id="heat-bar"></div>
+        </div>
+        <p class="heat-label">THERMAL VISOR</p>
+    </div>
+
+    <!-- Menu Inicial -->
+    <div id="start-menu" class="overlay">
+        <div class="menu-content">
+            <h1 class="logo">MULTIVERSE<br><span>SURVIVORS</span></h1>
+            <p class="subtitle">O Destino dos Mundos está em seus olhos.</p>
+            
+            <input type="text" id="nickname-input" placeholder="SEU NICKNAME" maxlength="15" class="menu-input">
+            
+            <div class="menu-buttons">
+                <button id="host-game-button" class="btn">CRIAR SALA (HOST)</button>
+                <button id="join-game-button" class="btn btn-secondary">ENTRAR EM SALA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seleção de Personagem -->
+    <div id="char-selection" class="overlay hidden">
+        <div class="menu-content">
+            <h1 class="selection-title">ESCOLHA SEU HERÓI</h1>
+            <div class="char-list">
+                <div class="char-card selected" data-char="scott">
+                    <img src="images/scott  summers/parado-baixo.png" alt="Scott Summers">
+                    <h3>SCOTT SUMMERS</h3>
+                    <p>Laser Óptico</p>
+                </div>
+                <div class="char-card" data-char="wanda">
+                    <img src="images/wanda maximoff/andando/frame_01.png" alt="Wanda Maximoff">
+                    <h3>WANDA MAXIMOFF</h3>
+                    <p>Magia do Caos</p>
+                </div>
+            </div>
+            <button id="start-game-button" class="btn">CONFIRMAR</button>
+        </div>
+    </div>
+
+    <!-- Menu de Pausa -->
+    <div id="pause-menu" class="overlay hidden">
+        <div class="menu-content">
+            <h1 class="pause-title">PAUSADO</h1>
+            <button id="resume-button" class="btn">RETOMAR</button>
+            <button id="restart-button" class="btn btn-secondary">REINICIAR</button>
+            <button id="back-to-menu-button" class="btn btn-secondary">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <!-- Mensagem de Pausa Remota -->
+    <div id="remote-pause-overlay" class="overlay hidden">
+        <div class="menu-content">
+            <h1 id="remote-pause-text" class="pause-title">PLAYER PAUSOU</h1>
+            <p class="subtitle">Aguardando o outro jogador...</p>
+        </div>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div id="game-over" class="overlay hidden">
+        <div class="menu-content">
+            <h1 class="logo">VOCÊ<br><span>MORREU</span></h1>
+            <p id="final-score" class="subtitle">Pontos: 0</p>
+            <button id="retry-button" class="btn">TENTAR NOVAMENTE</button>
+            <button id="exit-button" class="btn btn-secondary">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <script type="module" src="game.js"></script>
+</body>
+</html>

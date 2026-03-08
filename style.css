@@ -1,0 +1,327 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #111;
+    font-family: 'Roboto', sans-serif;
+    user-select: none;
+}
+
+#gameCanvas {
+    display: block;
+}
+
+/* HUD */
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    font-size: 24px;
+    font-weight: 900;
+    text-shadow: 0 0 10px rgba(0, 150, 255, 0.7);
+    pointer-events: none;
+    z-index: 5;
+}
+
+#ammo-ui {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    color: #ff0055;
+    font-family: 'Bungee', cursive;
+    text-align: right;
+    pointer-events: none;
+}
+
+.ammo-count {
+    font-size: 50px;
+    margin: 0;
+    text-shadow: 0 0 15px rgba(255, 0, 85, 0.6);
+}
+
+.ammo-label {
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: #ff88aa;
+}
+
+.reloading {
+    animation: blink 0.5s infinite alternate;
+}
+
+/* Heat Bar UI (Scott) */
+#heat-ui {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+
+#heat-container {
+    width: 20px;
+    height: 200px;
+    background: rgba(30, 0, 0, 0.8);
+    border: 2px solid #550000;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+#heat-bar {
+    width: 100%;
+    height: 0%; /* Cresce de baixo para cima */
+    position: absolute;
+    bottom: 0;
+    background: linear-gradient(0deg, #ffcc00 0%, #ff3300 50%, #ff0000 100%);
+    box-shadow: 0 0 15px rgba(255, 50, 0, 0.5);
+    transition: height 0.1s linear, background 0.3s ease;
+}
+
+.heat-label {
+    margin-top: 10px;
+    font-family: 'Bungee', cursive;
+    font-size: 12px;
+    color: #ff4400;
+    letter-spacing: 1px;
+}
+
+.overheated {
+    animation: blink 0.3s infinite alternate;
+}
+
+#score {
+    margin-bottom: 10px;
+}
+
+#health-container {
+    width: 250px;
+    height: 12px;
+    background: rgba(50, 50, 50, 0.8);
+    border: 2px solid #444;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+#health-bar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    transition: width 0.3s ease, background 0.3s ease;
+}
+
+#pause-hint {
+    font-size: 14px;
+    opacity: 0.7;
+    margin-top: 5px;
+    color: #aaddff;
+}
+
+/* Overlays (Menus) */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0, 15, 40, 0.92) 0%, rgba(0, 5, 15, 0.98) 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    transition: opacity 0.3s ease;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.menu-content {
+    text-align: center;
+    color: white;
+    max-width: 900px;
+}
+
+/* Logo Design */
+.logo {
+    font-family: 'Bungee', cursive;
+    font-size: 80px;
+    line-height: 0.9;
+    margin-bottom: 20px;
+    color: #eee;
+    text-shadow: 
+        0 0 10px rgba(0, 180, 255, 0.8),
+        0 0 20px rgba(0, 100, 255, 0.5),
+        4px 4px 0px #111;
+    animation: glow 2s infinite alternate;
+}
+
+.logo span {
+    color: #00d4ff;
+    font-size: 100px;
+}
+
+.subtitle {
+    font-size: 18px;
+    letter-spacing: 2px;
+    margin-bottom: 40px;
+    opacity: 0.8;
+    color: #88ccff;
+}
+
+/* Seleção de Personagem */
+.selection-title {
+    font-family: 'Bungee', cursive;
+    font-size: 40px;
+    margin-bottom: 30px;
+    color: #00d4ff;
+}
+
+.char-list {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.char-card {
+    background: rgba(0, 30, 60, 0.5);
+    border: 3px solid #005588;
+    padding: 20px;
+    width: 200px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    position: relative;
+    /* overflow: hidden removido para evitar corte do sprite grande */
+}
+
+.char-card:hover {
+    background: rgba(0, 50, 100, 0.7);
+    border-color: #00aaff;
+    transform: translateY(-5px);
+}
+
+.char-card.selected {
+    background: rgba(0, 100, 200, 0.4);
+    border-color: #00d4ff;
+    box-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
+}
+
+.char-card img {
+    width: 160px;
+    height: 160px;
+    object-fit: contain;
+    margin-bottom: 15px;
+    transition: transform 0.2s;
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.char-card[data-char="wanda"] img {
+    transform: scale(1.9) translateY(10px); /* Centralizado e levemente ajustado para baixo */
+    transform-origin: center;
+}
+
+.char-card[data-char="wanda"]:hover img {
+    transform: scale(2.0) translateY(10px);
+}
+
+.char-card h3 {
+    margin: 10px 0 5px 0;
+    font-size: 18px;
+    color: #fff;
+}
+
+.char-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #88ccff;
+}
+
+/* Buttons */
+.btn {
+    background: transparent;
+    border: 3px solid #00aaff;
+    color: white;
+    padding: 15px 40px;
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    box-shadow: 0 0 15px rgba(0, 150, 255, 0.3);
+    margin: 10px;
+    display: block;
+    width: 250px;
+    margin: 10px auto;
+    font-family: 'Roboto', sans-serif;
+}
+
+.btn:hover {
+    background: #0088ff;
+    box-shadow: 0 0 30px rgba(0, 180, 255, 0.6);
+    transform: scale(1.05);
+    border-color: #00d4ff;
+}
+
+.btn-secondary {
+    border-color: #2ecc71;
+    color: #2ecc71;
+    font-size: 16px;
+    padding: 10px 20px;
+}
+
+.menu-input {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid #00aaff;
+    color: white;
+    padding: 12px 20px;
+    font-family: 'Bungee', cursive;
+    font-size: 1.2rem;
+    width: 300px;
+    margin-bottom: 20px;
+    text-align: center;
+    border-radius: 4px;
+    transition: 0.3s;
+}
+
+.menu-input:focus {
+    outline: none;
+    background: rgba(0,170,255,0.1);
+    box-shadow: 0 0 15px rgba(0,170,255,0.5);
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 320px;
+    margin: 0 auto;
+}
+
+#game-over {
+    background: radial-gradient(circle, rgba(60, 0, 0, 0.95) 0%, rgba(10, 0, 0, 0.98) 100%);
+}
+
+#game-over .logo span {
+    color: #ff0033;
+    text-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+}
+
+#game-over .btn {
+    border-color: #ff0033;
+    box-shadow: 0 0 15px rgba(255, 0, 50, 0.3);
+}
+
+#game-over .btn:hover {
+    background: #ff0033;
+}
