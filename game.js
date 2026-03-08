@@ -1,4 +1,9 @@
-import { joinRoom } from 'https://esm.sh/trystero@0.20.1/torrent';
+import { joinRoom } from 'https://esm.sh/trystero@0.20.1/mqtt';
+
+// Verificar se o navegador permite WebRTC (exige HTTPS ou localhost)
+if (!window.isSecureContext && window.location.hostname !== 'localhost') {
+    alert("AVISO: O multiplayer P2P pode não funcionar em conexões HTTP. Use HTTPS ou localhost.");
+}
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
