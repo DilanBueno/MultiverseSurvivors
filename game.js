@@ -26,6 +26,7 @@ const finalScoreElement = document.getElementById('final-score');
 const hostGameButton = document.getElementById('host-game-button');
 const joinGameButton = document.getElementById('join-game-button');
 const nicknameInput = document.getElementById('nickname-input');
+const roomCodeInput = document.getElementById('room-code-input');
 const startGameButton = document.getElementById('start-game-button');
 const resumeButton = document.getElementById('resume-button');
 const restartButton = document.getElementById('restart-button');
@@ -51,10 +52,10 @@ let peers = [];
 let isHostMode = false;
 let myNickname = "Player";
 
-function initNetwork(isHost) {
+function initNetwork(isHost, roomCode) {
     isHostMode = isHost;
     const appId = 'multiverse-survivors-v2';
-    room = joinRoom({appId: appId}, 'global-arena');
+    room = joinRoom({appId: appId}, roomCode);
     
     [sendUpdate, getUpdate] = room.makeAction('update');
     [sendShoot, getShoot] = room.makeAction('shoot');
@@ -88,13 +89,11 @@ function initNetwork(isHost) {
 
     getEnemies((data) => {
         if (!isHostMode) {
-            // No cliente, atualizamos as posições mas tentamos não zerar o HP se tivermos acabado de bater
             data.forEach(e => {
                 let localEnemy = enemies.find(le => le.id === e.id);
                 if (localEnemy) {
                     localEnemy.x = e.x;
                     localEnemy.y = e.y;
-                    // Só atualiza HP se o Host disser que é menor (significa que o dano foi registrado lá)
                     if (e.health < localEnemy.health) localEnemy.health = e.health;
                 } else {
                     const en = new Enemy(e.x, e.y, e.id);
@@ -102,7 +101,6 @@ function initNetwork(isHost) {
                     enemies.push(en);
                 }
             });
-            // Remove mortos
             enemies = enemies.filter(le => data.find(e => e.id === le.id));
         }
     });
@@ -252,16 +250,20 @@ window.addEventListener('mouseup', () => isFiring = false);
 
 // UI Handlers
 hostGameButton.onclick = () => {
+    const code = roomCodeInput.value.trim();
+    if (!code) return alert("Digite um código para a sala!");
     myNickname = nicknameInput.value || "Host";
-    initNetwork(true);
+    initNetwork(true, code);
     startMenu.classList.add('hidden');
     charSelection.classList.remove('hidden');
     currentState = STATES.SELECTION;
 };
 
 joinGameButton.onclick = () => {
+    const code = roomCodeInput.value.trim();
+    if (!code) return alert("Digite o código da sala para entrar!");
     myNickname = nicknameInput.value || "Player";
-    initNetwork(false);
+    initNetwork(false, code);
     startMenu.classList.add('hidden');
     charSelection.classList.remove('hidden');
     currentState = STATES.SELECTION;
@@ -546,7 +548,6 @@ function update() {
     player.update();
     if (isFiring && selectedHero === 'wanda') player.wandaShoot();
 
-    // Sincronização de Rede
     if (sendUpdate) {
         sendUpdate({
             x: player.x, y: player.y, hero: player.hero, direction: player.direction,
@@ -572,8 +573,6 @@ function update() {
     if (isFiring && player.hero === 'scott' && !player.isOverheated) camera.shake = Math.max(camera.shake, 5);
     
     const pos = player.getEyePosition();
-    
-    // Calcula a direção e um ponto bem distante (3000px) para o laser
     const dx = worldMousePos.x - pos.x;
     const dy = worldMousePos.y - pos.y;
     const angle = Math.atan2(dy, dx);
@@ -582,17 +581,13 @@ function update() {
         x: pos.x + Math.cos(angle) * maxDist,
         y: pos.y + Math.sin(angle) * maxDist
     };
-
     player.laserEndPos = {x: projectedTarget.x, y: projectedTarget.y};
 
-    // Lógica de Laser Não-Perfurante
     if (player.hero === 'scott' && isFiring && !player.isOverheated) {
         let closestEnemy = null;
         let minDist = Infinity;
-
         enemies.forEach(enemy => {
             const hb = enemy.getHitbox();
-            // Verifica colisão usando o ponto projetado (longe) em vez do mouse
             const collisionPoint = getLineRectCollisionPoint(pos.x, pos.y, projectedTarget.x, projectedTarget.y, hb.x, hb.y, hb.w, hb.h);
             if (collisionPoint) {
                 const dist = Math.sqrt((pos.x - collisionPoint.x)**2 + (pos.y - collisionPoint.y)**2);
@@ -603,7 +598,6 @@ function update() {
                 }
             }
         });
-
         if (closestEnemy && closestEnemy.laserCooldown <= 0) {
             if (isHostMode) closestEnemy.health -= 0.7; else sendEnemyHit({id: closestEnemy.id, damage: 0.7});
             closestEnemy.laserCooldown = 15; 
@@ -621,14 +615,12 @@ function update() {
                 if (d < minDist) { minDist = d; target = rp; }
             }
             enemy.update(target);
-
-            // Colisão entre inimigos (Separação)
             for (let i = index + 1; i < enemies.length; i++) {
                 const other = enemies[i];
                 const dx = other.x - enemy.x;
                 const dy = other.y - enemy.y;
                 const distSq = dx * dx + dy * dy;
-                const minDistBetween = 60; // Distância mínima para não sobrepor
+                const minDistBetween = 60;
                 if (distSq < minDistBetween * minDistBetween) {
                     const dist = Math.sqrt(distSq) || 1;
                     const overlap = (minDistBetween - dist) / 2;
@@ -643,12 +635,9 @@ function update() {
         } else {
             enemy.update({x: 0, y: 0}); 
         }
-
         const hb = enemy.getHitbox();
         const dxP = player.x - enemy.x, dyP = player.y - enemy.y; 
         if (dxP*dxP + dyP*dyP < 1600) player.takeDamage(1);
-
-        // Balas da Wanda
         for (let j = bullets.length - 1; j >= 0; j--) {
             const b = bullets[j];
             if (b.x >= hb.x && b.x <= hb.x + hb.w && b.y >= hb.y && b.y <= hb.y + hb.h) {
@@ -656,7 +645,6 @@ function update() {
                 camera.shake = 15; spawnSparks(enemy.x, enemy.y, '#ff0055', 6); bullets.splice(j, 1);
             }
         }
-
         if (isHostMode && enemy.health <= 0) { 
             bloodStains.push(new BloodStain(enemy.x, enemy.y)); 
             enemies.splice(index, 1); 
